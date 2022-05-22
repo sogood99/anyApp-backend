@@ -7,9 +7,14 @@ from rest_framework.authtoken.models import Token
 
 class AccountTest(APITestCase):
     def setUp(self) -> None:
-        self.test_user = User.objects.create_user(
-            'testuser', 'test@test.com', 'testPassword')
+        self.test_user_data = {
+            'username': 'testuser', 'email': 'test@test.com', 'password': 'testPassword'
+        }
+        self.test_user = User.objects.create_user(**self.test_user_data)
+        self.test_token = Token.objects.create(user=self.test_user).key
+
         self.create_url = reverse('account-create')
+        self.login_url = reverse('login')
 
     def test_create_user(self):
         data = {
@@ -26,6 +31,7 @@ class AccountTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['email'], data['email'])
         self.assertFalse('password' in response.data)
+        self.assertFalse('profile_name' in response.data)
         self.assertEqual(response.data['token'], token.key)
 
     def test_create_user_with_short_password(self):
@@ -40,86 +46,7 @@ class AccountTest(APITestCase):
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(len(response.data['password']), 1)
 
-    def test_create_user_with_no_password(self):
-        data = {
-            'username': 'foobar',
-            'email': 'foobarbaz@example.com',
-            'password': ''
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['password']), 1)
-
-    def test_create_user_with_too_long_username(self):
-        data = {
-            'username': 'foo'*30,
-            'email': 'foobarbaz@example.com',
-            'password': 'foobar'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['username']), 1)
-
-    def test_create_user_with_no_username(self):
-        data = {
-            'username': '',
-            'email': 'foobarbaz@example.com',
-            'password': 'foobar'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['username']), 1)
-
-    def test_create_user_with_preexisting_username(self):
-        data = {
-            'username': 'testuser',
-            'email': 'user@example.com',
-            'password': 'testuser'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['username']), 1)
-
-    def test_create_user_with_preexisting_email(self):
-        data = {
-            'username': 'testuser2',
-            'email': 'test@test.com',
-            'password': 'testuser'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
-
-    def test_create_user_with_invalid_email(self):
-        data = {
-            'username': 'foobarbaz',
-            'email':  'testing',
-            'passsword': 'foobarbaz'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
-
-    def test_create_user_with_no_email(self):
-        data = {
-            'username': 'foobar',
-            'email': '',
-            'password': 'foobarbaz'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
+    def test_login(self):
+        response = self.client.post(
+            self.login_url, self.test_user_data, format='json')
+        self.assertEqual(response.data['token'], self.test_token)
