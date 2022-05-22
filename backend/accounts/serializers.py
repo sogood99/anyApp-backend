@@ -1,7 +1,9 @@
-from wsgiref import validate
+from dataclasses import field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
+
+from .models import Profile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -23,3 +25,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password')
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    profile_name = serializers.CharField(max_length=20)
+
+    class Meta:
+        model = Profile
+        fields = ('user', 'profile_name')
