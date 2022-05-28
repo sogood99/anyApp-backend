@@ -13,3 +13,4 @@ class Profile(models.Model):
     )
     profile_name = models.CharField(max_length=20)
     create_date = models.DateTimeField(auto_now_add=True)
+    profile_info = models.CharField(max_length=150)

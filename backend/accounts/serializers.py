@@ -30,7 +30,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all())
     profile_name = serializers.CharField(max_length=20)
+    create_date = serializers.DateTimeField(read_only=True)
+    profile_info = serializers.CharField(max_length=150)
 
     class Meta:
         model = Profile
-        fields = ('user', 'profile_name')
+        fields = ('user', 'profile_name', 'create_date', 'profile_info')

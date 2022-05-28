@@ -18,7 +18,8 @@ class UserCreate(APIView):
             user = user_serializer.save()
             if user:
                 # Create a Profile Model
-                profile_json = {'user': user.id, 'profile_name': 'New Profile'}
+                profile_json = {'user': user.id, 'profile_name': 'User ' +
+                                str(user.id), 'profile_info': 'Still New.'}
                 profile_serializer = serializers.ProfileSerializer(
                     data=profile_json)
                 if profile_serializer.is_valid():

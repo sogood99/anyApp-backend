@@ -17,6 +17,6 @@ class Tweet(APIView):
     def post(self, request, format='json'):
         data = request.FILES['image']
         path = default_storage.save(
-            'images/test.jpg', ContentFile(data.read()))
+            'image/test.jpg', ContentFile(data.read()))
 
         return Response("Yass", status=status.HTTP_200_OK)

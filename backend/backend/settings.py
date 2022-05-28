@@ -136,3 +136,7 @@ MEDIA_PATH = os.path.join(BASE_DIR, '.')
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Append Slash
+
+APPEND_SLASH = True
