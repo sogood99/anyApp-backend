@@ -75,5 +75,7 @@ Backend uses obtain_auth_token.
 | :--           | :--         |
 | id            | Int         |
 | profile_name  | String      |
+| create_date   | String      |
+| profile_info  | String      |
 
 Obtains profile information for user.
