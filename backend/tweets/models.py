@@ -12,11 +12,12 @@ class Tweet(models.Model):
         @param replies If this tweet is a reply of another tweet, foriegn key ref that tweet
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.CharField(max_length=150)
+    text = models.CharField(max_length=150, blank=True)
     imageUrl = models.CharField(max_length=100, null=True, blank=True)
     videoUrl = models.CharField(max_length=100, null=True, blank=True)
-    replies = models.ForeignKey(
+    repliesId = models.ForeignKey(
         "Tweet", on_delete=models.CASCADE, null=True, blank=True)
+    createDate = models.DateTimeField(auto_now_add=True)
 
 
 class Like(models.Model):

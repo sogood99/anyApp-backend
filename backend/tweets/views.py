@@ -9,17 +9,47 @@ from rest_framework.authtoken.models import Token
 from . import serializers, models
 
 
-class Tweet(APIView):
+class SendTweet(APIView):
     """
         Let User Access/Create Tweets
     """
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format='json'):
-        data = request.FILES['image']
-        path = default_storage.save(
-            'image/test.jpg', ContentFile(data.read()))
 
-        return Response("Yass", status=status.HTTP_200_OK)
+        tweet = models.Tweet.objects.create(user=request.user)
+
+        if 'text' in request.data:
+            text = request.data['text']
+        else:
+            text = None
+        if 'image' in request.FILES:
+            image = request.FILES['image']
+            ext = image.name.split('.')[-1]
+            imageUrl = default_storage.save(
+                'image/tweet_' + str(tweet.id) + '.' + ext, ContentFile(image.read()))
+        else:
+            imageUrl = None
+
+        tweet.text = text
+        tweet.imageUrl = imageUrl
+        tweet.save()
+
+        tweetSerializer = serializers.TweetSerializer(instance=tweet)
+
+        return Response(tweetSerializer.data, status=status.HTTP_200_OK)
+
+
+class GetFeed(APIView):
+    """
+       Get Feed for user 
+    """
+
+    def get(self, request):
+        tweets = models.Tweet.objects.all()[:10]
+        tweetSerializer = serializers.TweetSerializer(
+            instance=tweets, many=True)
+        return Response(tweetSerializer.data)
 
 
 class Like(APIView):

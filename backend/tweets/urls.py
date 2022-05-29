@@ -6,5 +6,6 @@ from . import views
 
 urlpatterns = [
     path('like/', views.Like.as_view(), name='like'),
-    path('', views.Tweet.as_view(), name='tweet'),
+    path('feed/', views.GetFeed.as_view(), name='feed'),
+    path('', views.SendTweet.as_view(), name='tweet'),
 ]
