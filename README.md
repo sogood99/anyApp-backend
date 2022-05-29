@@ -8,8 +8,12 @@ Backend for anyApp.
 
 ### [User](#user)
 * [create](#user_create)
-* [login](*user_login)
-* [profile](*user_profile)
+* [login](#user_login)
+* [profile](#user_profile)
+
+### [Tweet](#tweet)
+* [tweet](#tweet_tweet)
+* [like](#tweet_like)
 
 ### <a name="admin"></a> Admin:
 
@@ -27,7 +31,7 @@ Recieves the webpage for django admin.
 
 | Method    | `POST`                |
 | :--       | :--                   |
-| URL       | `/api/user/create`    |
+| URL       | `/api/user/create/`   |
 
 | Request   |             |
 | :--       | :--         |
@@ -48,7 +52,7 @@ Creates a new user, returns primary key and token.
 
 | Method    | `POST`                |
 | :--       | :--                   |
-| URL       | `/api/user/login`    |
+| URL       | `/api/user/login/`    |
 
 | Request   |             |
 | :--       | :--         |
@@ -65,7 +69,7 @@ Backend uses obtain_auth_token.
 
 | Method    | `GET`                   |
 | :--       | :--                     |
-| URL       | `/api/user/profile`     |
+| URL       | `/api/user/profile/`    |
 
 | Header          |               |
 | :--             | :--           |
@@ -79,3 +83,52 @@ Backend uses obtain_auth_token.
 | profile_info  | String      |
 
 Obtains profile information for user.
+
+### <a name="tweet"></a> Tweet:
+
+#### <a name="tweet_tweet"></a> Tweet
+
+| Method    | `POST`            |
+| :--       | :--               |
+| URL       | `/api/tweet/`     |
+
+| Header          |               |
+| :--             | :--           |
+| Authorization   | Token String  |
+
+| Request   |                 |
+| :--       | :--             |
+| text      | String          |
+| replies   | Int?            |
+| image     | MultipartBody   |
+| video     | MultipartBody   |
+
+| Response      |             |
+| :--           | :--         |
+| id            | Int         |
+| text          | String      |
+| imageUrl      | String      |
+| videoUrl      | String      |
+| replies       | Int         |
+
+User attempts to tweet out something, if success then respond with tweet data.
+
+#### <a name="tweet_like"></a> Like
+
+| Method    | `POST`                  |
+| :--       | :--                     |
+| URL       | `/api/tweet/like/`      |
+
+| Header          |                 |
+| :--             | :--             |
+| Authorization   | Token String?   |
+
+| Request       |                 |
+| :--           | :--             |
+| likeTweetId   | String          |
+
+| Response      |             |
+| :--           | :--         |
+| liked         | Boolean     |
+
+User attempts to like sth => liked = true, if like already exists then => taking back the like, which means liked = false.
