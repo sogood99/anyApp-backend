@@ -20,3 +20,14 @@ class Tweet(APIView):
             'image/test.jpg', ContentFile(data.read()))
 
         return Response("Yass", status=status.HTTP_200_OK)
+
+
+class Like(APIView):
+    """
+        Let User Like a Tweet
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format='json'):
+        return Response("Hello")
