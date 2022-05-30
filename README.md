@@ -78,11 +78,34 @@ Backend uses obtain_auth_token.
 | Response      |             |
 | :--           | :--         |
 | id            | Int         |
-| profile_name  | String      |
-| create_date   | String      |
-| profile_info  | String      |
+| profileName   | String      |
+| createDate    | String      |
+| profileInfo   | String      |
 
-Obtains profile information for user.
+Obtains profile information for authenticated user.
+
+| Method    | `POST`                  |
+| :--       | :--                     |
+| URL       | `/api/user/profile/`    |
+
+| Header          |                |
+| :--             | :--            |
+| Authorization   | Token String?  |
+
+| Request   |                 |
+| :--       | :--             |
+| userId    | Int             |
+
+| Response      |             |
+| :--           | :--         |
+| isSelf        | Boolean     |
+| profileName   | String      |
+| userIconUrl   | String      |
+| userBkgUrl    | String      |
+| createDate    | String      |
+| profileInfo   | String      |
+
+Similar to GET, but if there is an auth token, backend will check if it == userId, and return the value to isSelf.
 
 ### <a name="tweet"></a> Tweet:
 
