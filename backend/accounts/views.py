@@ -18,8 +18,8 @@ class UserCreate(APIView):
             user = user_serializer.save()
             if user:
                 # Create a Profile Model
-                profile_json = {'user': user.id, 'profile_name': 'User ' +
-                                str(user.id), 'profile_info': 'Still New.'}
+                profile_json = {'user': user.id, 'profileName': 'User ' +
+                                str(user.id), 'profileInfo': None}
                 profile_serializer = serializers.ProfileSerializer(
                     data=profile_json)
                 if profile_serializer.is_valid():
@@ -34,16 +34,34 @@ class UserCreate(APIView):
         return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProfileJson(APIView):
+class GetProfileJson(APIView):
     """
         Get Profile Information
     """
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        profile = models.Profile.objects.get(pk=request.user)
-        if profile:
-            profile_serializer = serializers.ProfileSerializer(
-                instance=profile)
-            return Response(profile_serializer.data)
-        return Response('Failed', status=status.HTTP_400_BAD_REQUEST)
+        if request.user.is_authenticated:
+            profile = models.Profile.objects.get(pk=request.user)
+            if profile:
+                profile_serializer = serializers.ProfileSerializer(
+                    instance=profile)
+                return Response(profile_serializer.data)
+        return Response('Not Authenticated', status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, format='json'):
+        if 'userId' in request.data:
+            requestUserId = request.data['userId']
+            profile = models.Profile.objects.get(pk=request.user)
+            if profile:
+                profile_serializer = serializers.ProfileSerializer(
+                    instance=profile)
+                # check if user is self
+                jsonResp = profile_serializer.data
+                if request.user.is_authenticated and request.user == profile.user:
+                    jsonResp['isSelf'] = True
+                else:
+                    jsonResp['isSelf'] = False
+
+                return Response(jsonResp)
+
+        return Response('User Not Found', status=status.HTTP_400_BAD_REQUEST)

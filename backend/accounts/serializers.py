@@ -28,11 +28,24 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all())
-    profile_name = serializers.CharField(max_length=20)
-    create_date = serializers.DateTimeField(read_only=True)
-    profile_info = serializers.CharField(max_length=150)
+        queryset=User.objects.all(), write_only=True)
+    userId = serializers.IntegerField(source='user.id', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    profileName = serializers.CharField(max_length=20, default="User")
+    userIconUrl = serializers.SerializerMethodField(
+        'getUserIconUrl', read_only=True)
+    userBkgUrl = serializers.CharField(max_length=100, read_only=True)
+    createDate = serializers.DateTimeField(read_only=True)
+    profileInfo = serializers.CharField(
+        max_length=150, default=None, allow_null=True)
 
     class Meta:
         model = Profile
-        fields = ('user', 'profile_name', 'create_date', 'profile_info')
+        fields = ('user', 'userId', 'username', 'profileName', 'userIconUrl',
+                  'userBkgUrl', 'createDate', 'profileInfo')
+
+    def getUserIconUrl(self, obj):
+        if obj.userIconUrl == None:
+            return 'image/userIcon/default.jpg'
+        else:
+            return obj.userIconUrl

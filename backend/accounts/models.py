@@ -11,6 +11,8 @@ class Profile(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    profile_name = models.CharField(max_length=20)
-    create_date = models.DateTimeField(auto_now_add=True)
-    profile_info = models.CharField(max_length=150)
+    profileName = models.CharField(max_length=20)
+    userIconUrl = models.CharField(max_length=100, blank=True, null=True)
+    userBkgUrl = models.CharField(max_length=100, blank=True, null=True)
+    createDate = models.DateTimeField(auto_now_add=True)
+    profileInfo = models.CharField(max_length=150, blank=True, null=True)

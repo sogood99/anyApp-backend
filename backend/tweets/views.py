@@ -27,7 +27,7 @@ class SendTweet(APIView):
             image = request.FILES['image']
             ext = image.name.split('.')[-1]
             imageUrl = default_storage.save(
-                'image/tweet_' + str(tweet.id) + '.' + ext, ContentFile(image.read()))
+                'image/tweet/' + str(tweet.id) + '.' + ext, ContentFile(image.read()))
         else:
             imageUrl = None
 

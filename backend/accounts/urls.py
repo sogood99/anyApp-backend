@@ -6,5 +6,5 @@ from . import views
 urlpatterns = [
     path('create/', views.UserCreate.as_view(), name='account-create'),
     path('login/', auth_views.obtain_auth_token, name='login'),
-    path('profile/', views.ProfileJson.as_view(), name='profile-json'),
+    path('profile/', views.GetProfileJson.as_view(), name='get-profile'),
 ]
