@@ -46,7 +46,7 @@ class GetFeed(APIView):
     """
 
     def get(self, request):
-        tweets = models.Tweet.objects.all()[:10]
+        tweets = models.Tweet.objects.all()
         tweetSerializer = serializers.TweetSerializer(
             instance=tweets, many=True)
         return Response(tweetSerializer.data)
