@@ -34,8 +34,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     profileName = serializers.CharField(max_length=20, default="User")
     userIconUrl = serializers.SerializerMethodField(
         'getUserIconUrl', read_only=True)
-    userBkgUrl = serializers.CharField(max_length=100, read_only=True)
-    createDate = serializers.DateTimeField(read_only=True)
+    userBkgUrl = serializers.SerializerMethodField(
+        'getUserBkgUrl', read_only=True)
+    createDate = serializers.DateTimeField(read_only=True, format="%Y-%m-%d")
     profileInfo = serializers.CharField(
         max_length=150, default=None, allow_null=True)
 
@@ -49,3 +50,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             return 'image/userIcon/default.jpg'
         else:
             return obj.userIconUrl
+
+    def getUserBkgUrl(self, obj):
+        if obj.userBkgUrl == None:
+            return 'image/userBkgImg/default.jpg'
+        else:
+            return obj.userBkgUrl
