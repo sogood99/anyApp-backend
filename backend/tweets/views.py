@@ -49,16 +49,17 @@ class GetFeed(APIView):
         def popularFeed():
             # defaults to giving most recent
             tweets = models.Tweet.objects.order_by('-createDate').all()
-            tweetSerializer = serializers.TweetSerializer(
-                instance=tweets, many=True)
+            print(request.user.id)
+            tweetSerializer = serializers.TweetSerializer(user=request.user,
+                                                          instance=tweets, many=True)
             return Response(tweetSerializer.data)
 
         def profileFeed(user):
             # feed of tweets sent by user
             tweets = models.Tweet.objects.filter(
                 user=user).order_by('-createDate').all()
-            tweetSerializer = serializers.TweetSerializer(
-                instance=tweets, many=True)
+            tweetSerializer = serializers.TweetSerializer(user=request.user,
+                                                          instance=tweets, many=True)
             return Response(tweetSerializer.data)
 
         if 'option' not in request.data:
@@ -73,7 +74,7 @@ class GetFeed(APIView):
                 return popularFeed()
 
 
-class Like(APIView):
+class LikeView(APIView):
     """
         Let User Like a Tweet
     """
@@ -81,4 +82,21 @@ class Like(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format='json'):
-        return Response("Hello")
+        if 'tweet' not in request.data:
+            return Response("No Tweet Specified", status=status.HTTP_400_BAD_REQUEST)
+
+        userId = request.user.id
+        tweetId = request.data['tweet']
+        like = models.Like.objects.filter(
+            user=request.user, tweet=tweetId).first()
+        if like is None:
+            # has not been liked before
+            likeSerializer = serializers.LikeSerializer(
+                data={"user": userId, "tweet": tweetId})
+            if likeSerializer.is_valid() and likeSerializer.save():
+                return Response({"isLike": True})
+            # else does nothing and falls to isLike=False
+            print(likeSerializer.errors)
+        else:
+            like.delete()
+        return Response({"isLike": False})

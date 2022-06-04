@@ -26,8 +26,10 @@ class Like(models.Model):
         @param user User that liked
         @param tweet Tweet that the user liked
     """
-    user = models.ForeignKey(User,  on_delete=models.CASCADE)
-    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=False, null=False)
+    tweet = models.ForeignKey(
+        Tweet, on_delete=models.CASCADE, blank=False, null=False)
 
     class Meta:
         constraints = [
