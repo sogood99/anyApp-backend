@@ -45,8 +45,6 @@ class TweetSerializer(serializers.ModelSerializer):
     def getIfUserLiked(self, obj):
         if self.user is None or self.user.is_authenticated:
             likeCount = Like.objects.filter(user=self.user, tweet=obj).count()
-            for q in Like.objects.filter(tweet=obj, user=self.user):
-                print(q.user, self.user)
             return (likeCount > 0)
         return False
 

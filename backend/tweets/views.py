@@ -49,7 +49,6 @@ class GetFeed(APIView):
         def popularFeed():
             # defaults to giving most recent
             tweets = models.Tweet.objects.order_by('-createDate').all()
-            print(request.user.id)
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
             return Response(tweetSerializer.data)
@@ -96,7 +95,6 @@ class LikeView(APIView):
             if likeSerializer.is_valid() and likeSerializer.save():
                 return Response({"isLike": True})
             # else does nothing and falls to isLike=False
-            print(likeSerializer.errors)
         else:
             like.delete()
         return Response({"isLike": False})
