@@ -23,7 +23,8 @@ class TweetSerializer(serializers.ModelSerializer):
     text = serializers.CharField()
     imageUrl = serializers.CharField()
     videoUrl = serializers.CharField()
-    repliesId = serializers.IntegerField(source='repliesTweet.id')
+    repliesId = serializers.SerializerMethodField(
+        'getRepliesId', read_only=True)
     createDate = serializers.DateTimeField()
     likes = serializers.SerializerMethodField('getLikeCount', read_only=True)
     isLiked = serializers.SerializerMethodField(
@@ -47,6 +48,12 @@ class TweetSerializer(serializers.ModelSerializer):
             return userProfile.profileName
         else:
             return 'UserError'
+
+    def getRepliesId(self, obj):
+        if obj.repliesTweet != None:
+            return obj.repliesTweet.id
+        else:
+            return None
 
     def getLikeCount(self, obj):
         likeCount = Like.objects.filter(tweet=obj).count()

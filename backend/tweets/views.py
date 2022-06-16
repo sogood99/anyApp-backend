@@ -17,8 +17,6 @@ class SendTweet(APIView):
 
     def post(self, request, format='json'):
 
-        print(request.data)
-
         tweet = models.Tweet.objects.create(user=request.user)
 
         if 'text' in request.data:
@@ -45,7 +43,10 @@ class SendTweet(APIView):
 
         tweet.text = text
         tweet.imageUrl = imageUrl
-        tweet.repliesTweet = models.Tweet.objects.get(pk=repliesId)
+        if repliesId is not None:
+            tweet.repliesTweet = models.Tweet.objects.get(pk=repliesId)
+        else:
+            tweet.repliesTweet = None
         tweet.save()
 
         tweetSerializer = serializers.TweetSerializer(
