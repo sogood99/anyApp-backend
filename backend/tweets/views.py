@@ -67,6 +67,16 @@ class GetFeed(APIView):
                                                           instance=tweets, many=True)
             return Response(tweetSerializer.data)
 
+        def repliesFeed(tweetId):
+            # feed of tweets
+            targetTweet = models.Tweet.objects.get(pk=tweetId)
+
+            tweets = models.Tweet.objects.filter(
+                repliesTweet=targetTweet).order_by('-createDate').all()
+            tweetSerializer = serializers.TweetSerializer(user=request.user,
+                                                          instance=tweets, many=True)
+            return Response(tweetSerializer.data)
+
         def profileFeed(user):
             # feed of tweets sent by user
             tweets = models.Tweet.objects.filter(
@@ -83,6 +93,8 @@ class GetFeed(APIView):
                 return popularFeed()
             elif option == "Profile" and request.user.is_authenticated:
                 return profileFeed(request.user)
+            elif option == "Replies" and 'repliesId' in request.data:
+                return repliesFeed(tweetId=request.data['repliesId'])
             else:
                 return popularFeed()
 
