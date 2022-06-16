@@ -23,6 +23,16 @@ class SendTweet(APIView):
             text = request.data['text']
         else:
             text = None
+
+        if 'repliesId' in request.data:
+            repliesId = request.data['repliesId']
+            try:
+                repliesId = int(repliesId)
+            except:
+                repliesId = None
+        else:
+            repliesId = None
+
         if 'image' in request.FILES:
             image = request.FILES['image']
             ext = image.name.split('.')[-1]
@@ -33,10 +43,14 @@ class SendTweet(APIView):
 
         tweet.text = text
         tweet.imageUrl = imageUrl
+        if repliesId is not None:
+            tweet.repliesTweet = models.Tweet.objects.get(pk=repliesId)
+        else:
+            tweet.repliesTweet = None
         tweet.save()
 
-        tweetSerializer = serializers.TweetSerializer(instance=tweet)
-
+        tweetSerializer = serializers.TweetSerializer(
+            user=request.user, instance=tweet)
         return Response(tweetSerializer.data, status=status.HTTP_200_OK)
 
 
@@ -49,6 +63,16 @@ class GetFeed(APIView):
         def popularFeed():
             # defaults to giving most recent
             tweets = models.Tweet.objects.order_by('-createDate').all()
+            tweetSerializer = serializers.TweetSerializer(user=request.user,
+                                                          instance=tweets, many=True)
+            return Response(tweetSerializer.data)
+
+        def repliesFeed(tweetId):
+            # feed of tweets
+            targetTweet = models.Tweet.objects.get(pk=tweetId)
+
+            tweets = models.Tweet.objects.filter(
+                repliesTweet=targetTweet).order_by('-createDate').all()
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
             return Response(tweetSerializer.data)
@@ -69,6 +93,8 @@ class GetFeed(APIView):
                 return popularFeed()
             elif option == "Profile" and request.user.is_authenticated:
                 return profileFeed(request.user)
+            elif option == "Replies" and 'repliesId' in request.data:
+                return repliesFeed(tweetId=request.data['repliesId'])
             else:
                 return popularFeed()
 
@@ -98,3 +124,20 @@ class LikeView(APIView):
         else:
             like.delete()
         return Response({"isLike": False})
+
+
+class TweetDetail(APIView):
+
+    """
+        Let User access info about a single Tweet
+    """
+
+    def post(self, request, format='json'):
+        if 'tweet' not in request.data:
+            return Response("No Tweet Specified", status=status.HTTP_400_BAD_REQUEST)
+
+        tweetId = request.data['tweet']
+        tweet = models.Tweet.objects.get(pk=tweetId)
+        tweetSerializer = serializers.TweetSerializer(
+            user=request.user, instance=tweet)
+        return Response(tweetSerializer.data)
