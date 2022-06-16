@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework.fields import empty
 from django.contrib.auth.models import User
 
 from accounts.models import Profile
@@ -8,7 +9,7 @@ from tweets.models import Tweet, Like
 
 class TweetSerializer(serializers.ModelSerializer):
 
-    def __init__(self, user=None, instance=None, data=..., **kwargs):
+    def __init__(self, user=None, instance=None, data=empty, **kwargs):
         super().__init__(instance, data, **kwargs)
         self.user = user
 

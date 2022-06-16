@@ -35,8 +35,8 @@ class SendTweet(APIView):
         tweet.imageUrl = imageUrl
         tweet.save()
 
-        tweetSerializer = serializers.TweetSerializer(instance=tweet)
-
+        tweetSerializer = serializers.TweetSerializer(
+            user=request.user, instance=tweet)
         return Response(tweetSerializer.data, status=status.HTTP_200_OK)
 
 
