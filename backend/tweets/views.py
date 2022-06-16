@@ -17,12 +17,24 @@ class SendTweet(APIView):
 
     def post(self, request, format='json'):
 
+        print(request.data)
+
         tweet = models.Tweet.objects.create(user=request.user)
 
         if 'text' in request.data:
             text = request.data['text']
         else:
             text = None
+
+        if 'repliesId' in request.data:
+            repliesId = request.data['repliesId']
+            try:
+                repliesId = int(repliesId)
+            except:
+                repliesId = None
+        else:
+            repliesId = None
+
         if 'image' in request.FILES:
             image = request.FILES['image']
             ext = image.name.split('.')[-1]
@@ -33,6 +45,7 @@ class SendTweet(APIView):
 
         tweet.text = text
         tweet.imageUrl = imageUrl
+        tweet.repliesTweet = models.Tweet.objects.get(pk=repliesId)
         tweet.save()
 
         tweetSerializer = serializers.TweetSerializer(
@@ -98,3 +111,20 @@ class LikeView(APIView):
         else:
             like.delete()
         return Response({"isLike": False})
+
+
+class TweetDetail(APIView):
+
+    """
+        Let User access info about a single Tweet
+    """
+
+    def post(self, request, format='json'):
+        if 'tweet' not in request.data:
+            return Response("No Tweet Specified", status=status.HTTP_400_BAD_REQUEST)
+
+        tweetId = request.data['tweet']
+        tweet = models.Tweet.objects.get(pk=tweetId)
+        tweetSerializer = serializers.TweetSerializer(
+            user=request.user, instance=tweet)
+        return Response(tweetSerializer.data)
