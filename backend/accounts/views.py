@@ -1,8 +1,10 @@
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 from . import serializers, models
 
@@ -65,3 +67,39 @@ class GetProfileJson(APIView):
                 return Response(jsonResp)
 
         return Response('User Not Found', status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateProfile(APIView):
+
+    """
+        Updates User Profile
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format='json'):
+        profile = models.Profile.objects.get(pk=request.user)
+
+        if 'profileName' in request.data:
+            profile.profileName = request.data['profileName']
+
+        if 'profileInfo' in request.data:
+            profile.profileInfo = request.data['profileInfo']
+
+        if 'userIcon' in request.FILES:
+            image = request.FILES['userIcon']
+            ext = image.name.split('.')[-1]
+            imageUrl = default_storage.save(
+                'image/userIcon/' + str(request.user.id) + '.' + ext, ContentFile(image.read()))
+            profile.userIconUrl = imageUrl
+
+        if 'userBkgImg' in request.FILES:
+            image = request.FILES['userBkgImg']
+            ext = image.name.split('.')[-1]
+            imageUrl = default_storage.save(
+                'image/userBkgImg/' + str(request.user.id) + '.' + ext, ContentFile(image.read()))
+            profile.userBkgUrl = imageUrl
+
+        profile.save()
+
+        profileSerializer = serializers.ProfileSerializer(instance=profile)
+        return Response(profileSerializer.data, status=status.HTTP_200_OK)
