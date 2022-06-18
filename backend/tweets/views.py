@@ -150,14 +150,17 @@ class LikeDetail(APIView):
 
         tweetId = request.data['tweet']
         tweet = models.Tweet.objects.get(pk=tweetId)
-        users = models.Like.objects.filter(tweet=tweet).values('user')
-        profiles = accountModels.Profile.objects.filter(user=users)
+        users = models.Like.objects.filter(
+            tweet=tweet).values_list('user', flat=True)
+        print(users)
+        profiles = accountModels.Profile.objects.filter(user__in=users)
+        print(profiles)
         profileSerializer = accountSerializers.ProfileSerializer(
             instance=profiles, many=True)
 
         print(profileSerializer.data)
 
-        return Response({})
+        return Response(profileSerializer.data)
 
 
 class TweetDetail(APIView):
