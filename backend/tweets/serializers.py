@@ -67,10 +67,6 @@ class TweetSerializer(serializers.ModelSerializer):
 
 
 class LikeSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(source='id',
-    #                                           read_only=False, queryset=User.objects.all())
-    # tweet = serializers.PrimaryKeyRelatedField(source='id',
-    #                                            read_only=False, queryset=Tweet.objects.all())
 
     class Meta:
         model = Like

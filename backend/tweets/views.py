@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from rest_framework.authtoken.models import Token
 
 from . import serializers, models
+from accounts import models as accountModels, serializers as accountSerializers
 
 
 class SendTweet(APIView):
@@ -41,8 +42,17 @@ class SendTweet(APIView):
         else:
             imageUrl = None
 
+        if 'video' in request.FILES:
+            video = request.FILES['video']
+            ext = video.name.split('.')[-1]
+            videoUrl = default_storage.save(
+                'video/tweet/' + str(tweet.id) + '.' + ext, ContentFile(video.read()))
+        else:
+            videoUrl = None
+
         tweet.text = text
         tweet.imageUrl = imageUrl
+        tweet.videoUrl = videoUrl
         if repliesId is not None:
             tweet.repliesTweet = models.Tweet.objects.get(pk=repliesId)
         else:
@@ -78,7 +88,7 @@ class GetFeed(APIView):
             return Response(tweetSerializer.data)
 
         def profileFeed(user):
-            # feed of tweets sent by user
+            # feed of profile of user authed
             tweets = models.Tweet.objects.filter(
                 user=user).order_by('-createDate').all()
             tweetSerializer = serializers.TweetSerializer(user=request.user,
@@ -93,6 +103,9 @@ class GetFeed(APIView):
                 return popularFeed()
             elif option == "Profile" and request.user.is_authenticated:
                 return profileFeed(request.user)
+            elif option == 'ProfileDetail' and 'userId' in request.data:
+                user = User.objects.get(pk=request.data['userId'])
+                return profileFeed(user)
             elif option == "Replies" and 'repliesId' in request.data:
                 return repliesFeed(tweetId=request.data['repliesId'])
             else:
@@ -124,6 +137,30 @@ class LikeView(APIView):
         else:
             like.delete()
         return Response({"isLike": False})
+
+
+class LikeDetail(APIView):
+    """
+    Get all users that liked a tweet
+    """
+
+    def post(self, request, format='json'):
+        if 'tweet' not in request.data:
+            return Response("No Tweet Specified", status=status.HTTP_400_BAD_REQUEST)
+
+        tweetId = request.data['tweet']
+        tweet = models.Tweet.objects.get(pk=tweetId)
+        users = models.Like.objects.filter(
+            tweet=tweet).values_list('user', flat=True)
+        print(users)
+        profiles = accountModels.Profile.objects.filter(user__in=users)
+        print(profiles)
+        profileSerializer = accountSerializers.ProfileSerializer(
+            instance=profiles, many=True)
+
+        print(profileSerializer.data)
+
+        return Response(profileSerializer.data)
 
 
 class TweetDetail(APIView):

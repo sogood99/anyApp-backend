@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 
-from .models import Profile
+from .models import Follow, Profile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -56,3 +56,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             return 'image/userBkgImg/default.jpg'
         else:
             return obj.userBkgUrl
+
+
+class FollowSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Follow
+        fields = ('user', 'followedUser')

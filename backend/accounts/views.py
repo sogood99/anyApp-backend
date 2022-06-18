@@ -53,7 +53,7 @@ class GetProfileJson(APIView):
     def post(self, request, format='json'):
         if 'userId' in request.data:
             requestUserId = request.data['userId']
-            profile = models.Profile.objects.get(pk=request.user)
+            profile = models.Profile.objects.get(pk=requestUserId)
             if profile:
                 profile_serializer = serializers.ProfileSerializer(
                     instance=profile)
@@ -63,6 +63,21 @@ class GetProfileJson(APIView):
                     jsonResp['isSelf'] = True
                 else:
                     jsonResp['isSelf'] = False
+
+                    # check if followed requestUser
+                    if request.user.is_authenticated:
+                        user = request.user
+                        followedUser = User.objects.get(pk=requestUserId)
+
+                        follow = models.Follow.objects.filter(
+                            user=user, followedUser=followedUser).first()
+
+                        if follow is not None:
+                            jsonResp['isFollowed'] = True
+                        else:
+                            jsonResp['isFollowed'] = False
+                    else:
+                        jsonResp['isFollowed'] = False
 
                 return Response(jsonResp)
 
@@ -103,3 +118,35 @@ class UpdateProfile(APIView):
 
         profileSerializer = serializers.ProfileSerializer(instance=profile)
         return Response(profileSerializer.data, status=status.HTTP_200_OK)
+
+
+class FollowView(APIView):
+    """
+        Let User Follow Another User
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format='json'):
+        if 'followedUserId' not in request.data:
+            return Response("No User Specified", status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        followedUserId = request.data['followedUserId']
+        followedUser = User.objects.get(pk=followedUserId)
+        follow = models.Follow.objects.filter(
+            user=user, followedUser=followedUser).first()
+
+        if user == followedUser:
+            return Response("Cannot Follow Self", status=status.HTTP_400_BAD_REQUEST)
+
+        if follow is None:
+            # has not been followed before
+            followSerializer = serializers.FollowSerializer(
+                data={"user": user.id, "followedUser": followedUser.id})
+            if followSerializer.is_valid() and followSerializer.save():
+                return Response({"isFollowed": True})
+            # else does nothing and falls to isFollow=False
+        else:
+            follow.delete()
+        return Response({"isFollowed": False})
