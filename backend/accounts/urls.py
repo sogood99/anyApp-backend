@@ -9,4 +9,5 @@ urlpatterns = [
     path('profile/', views.GetProfileJson.as_view(), name='get-profile'),
     path('profile/update/', views.UpdateProfile.as_view(), name='update-profile'),
     path('follow/', views.FollowView.as_view(), name='follow'),
+    path('follow/detail/', views.FollowDetail.as_view(), name='follow-detail'),
 ]

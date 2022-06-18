@@ -141,7 +141,7 @@ class LikeView(APIView):
 
 class LikeDetail(APIView):
     """
-    Get all users that liked a tweet
+        Get all users that liked a tweet
     """
 
     def post(self, request, format='json'):
@@ -152,13 +152,9 @@ class LikeDetail(APIView):
         tweet = models.Tweet.objects.get(pk=tweetId)
         users = models.Like.objects.filter(
             tweet=tweet).values_list('user', flat=True)
-        print(users)
         profiles = accountModels.Profile.objects.filter(user__in=users)
-        print(profiles)
         profileSerializer = accountSerializers.ProfileSerializer(
             instance=profiles, many=True)
-
-        print(profileSerializer.data)
 
         return Response(profileSerializer.data)
 
