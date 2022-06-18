@@ -70,12 +70,23 @@ class GetFeed(APIView):
     """
 
     def post(self, request, format='json'):
-        def popularFeed():
+        def recentFeed():
             # defaults to giving most recent
-            tweets = models.Tweet.objects.order_by('-createDate').all()
+            tweets = models.Tweet.objects.order_by('-createDate')
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
+
             return Response(tweetSerializer.data)
+
+        def popularFeed():
+            # orders by popular
+            tweets = models.Tweet.objects.all()
+            tweetSerializer = serializers.TweetSerializer(user=request.user,
+                                                          instance=tweets, many=True)
+            ordered = sorted(tweetSerializer.data,
+                             key=lambda t: t['likes'], reverse=True)
+
+            return Response(ordered)
 
         def repliesFeed(tweetId):
             # feed of tweets
@@ -90,17 +101,32 @@ class GetFeed(APIView):
         def profileFeed(user):
             # feed of profile of user authed
             tweets = models.Tweet.objects.filter(
-                user=user).order_by('-createDate').all()
+                user=user).order_by('-createDate')
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
+            return Response(tweetSerializer.data)
+
+        def followingFeed(user):
+            # following feed of user
+            followingUsers = accountModels.Follow.objects.filter(
+                followedUser=user).values_list('user', flat=True)
+
+            tweets = models.Tweet.objects.filter(
+                user__in=followingUsers).order_by('-createDate')
+            tweetSerializer = serializers.TweetSerializer(
+                user=user, instance=tweets, many=True)
             return Response(tweetSerializer.data)
 
         if 'option' not in request.data:
             return popularFeed()
         else:
             option = request.data['option']
-            if option == "Popular":
+            if option == "Recent":
+                return recentFeed()
+            elif option == "Popular":
                 return popularFeed()
+            elif option == "Following" and request.user.is_authenticated:
+                return followingFeed(request.user)
             elif option == "Profile" and request.user.is_authenticated:
                 return profileFeed(request.user)
             elif option == 'ProfileDetail' and 'userId' in request.data:
@@ -109,7 +135,7 @@ class GetFeed(APIView):
             elif option == "Replies" and 'repliesId' in request.data:
                 return repliesFeed(tweetId=request.data['repliesId'])
             else:
-                return popularFeed()
+                return recentFeed()
 
 
 class LikeView(APIView):
