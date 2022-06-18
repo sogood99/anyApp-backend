@@ -150,3 +150,28 @@ class FollowView(APIView):
         else:
             follow.delete()
         return Response({"isFollowed": False})
+
+
+class FollowDetail(APIView):
+    """
+        Get all users that follow userId
+    """
+
+    def post(self, request, format='json'):
+        # if userId == None, check the authentication user
+        if 'userId' not in request.data:
+            if request.user.is_authenticated:
+                userId = request.user.id
+            else:
+                return Response("No User Specified", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            userId = request.data['userId']
+
+        user = User.objects.get(pk=userId)
+        followingUsers = models.Follow.objects.filter(
+            followedUser=user).values_list('user', flat=True)
+        profiles = models.Profile.objects.filter(user__in=followingUsers)
+        profileSerializer = serializers.ProfileSerializer(
+            instance=profiles, many=True)
+
+        return Response(profileSerializer.data)
