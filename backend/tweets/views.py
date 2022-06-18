@@ -84,7 +84,7 @@ class GetFeed(APIView):
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
             ordered = sorted(tweetSerializer.data,
-                             key=lambda t: t['likes'], reverse=True)
+                             key=lambda t: (t['likes'], t['createDate']), reverse=True)
 
             return Response(ordered)
 
