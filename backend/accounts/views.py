@@ -53,7 +53,7 @@ class GetProfileJson(APIView):
     def post(self, request, format='json'):
         if 'userId' in request.data:
             requestUserId = request.data['userId']
-            profile = models.Profile.objects.get(pk=request.user)
+            profile = models.Profile.objects.get(pk=requestUserId)
             if profile:
                 profile_serializer = serializers.ProfileSerializer(
                     instance=profile)
