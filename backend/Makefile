@@ -1,7 +1,10 @@
 init:
+	make migrate
+	./manage.py createsuperuser
+
+migrate:
 	./manage.py makemigrations accounts tweets
 	./manage.py migrate
-	./manage.py createsuperuser
 
 run:
 	./manage.py runserver
