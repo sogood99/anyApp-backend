@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from rest_framework.authtoken.models import Token
 
 from . import serializers, models
+from accounts import models as accountModels, serializers as accountSerializers
 
 
 class SendTweet(APIView):
@@ -136,6 +137,27 @@ class LikeView(APIView):
         else:
             like.delete()
         return Response({"isLike": False})
+
+
+class LikeDetail(APIView):
+    """
+    Get all users that liked a tweet
+    """
+
+    def post(self, request, format='json'):
+        if 'tweet' not in request.data:
+            return Response("No Tweet Specified", status=status.HTTP_400_BAD_REQUEST)
+
+        tweetId = request.data['tweet']
+        tweet = models.Tweet.objects.get(pk=tweetId)
+        users = models.Like.objects.filter(tweet=tweet).values('user')
+        profiles = accountModels.Profile.objects.filter(user=users)
+        profileSerializer = accountSerializers.ProfileSerializer(
+            instance=profiles, many=True)
+
+        print(profileSerializer.data)
+
+        return Response({})
 
 
 class TweetDetail(APIView):
