@@ -249,9 +249,17 @@ class TweetSearch(APIView):
         if args.dateFrom:
             queryset = queryset.filter(createDate__date__gte=args.dateFrom)
 
+        newQ = accountModels.Profile.objects.filter(
+            user__in=queryset.values_list('user', flat=True))
+
         if args.string is not None:
+            q = Q()
             for s in args.string:
-                queryset = queryset.filter(text__contains=s)
+                q = q | Q(text__contains=s)
+                q = q | Q(user__username__contains=s)
+                tempQ = newQ.filter(profileName__contains=s)
+                q = q | Q(user__in=tempQ.values_list('user', flat=True))
+            queryset = queryset.filter(q)
 
         tweetSerializer = serializers.TweetSerializer(
             user=request.user, instance=queryset, many=True)
