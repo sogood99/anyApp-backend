@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from rest_framework.authtoken.models import Token
+import datetime
 
 from . import serializers, models
 from accounts import models as accountModels, serializers as accountSerializers
@@ -109,7 +111,7 @@ class GetFeed(APIView):
         def followingFeed(user):
             # following feed of user
             followingUsers = accountModels.Follow.objects.filter(
-                followedUser=user).values_list('user', flat=True)
+                user=user).values_list('followedUser', flat=True)
 
             tweets = models.Tweet.objects.filter(
                 user__in=followingUsers).order_by('-createDate')
@@ -199,4 +201,58 @@ class TweetDetail(APIView):
         tweet = models.Tweet.objects.get(pk=tweetId)
         tweetSerializer = serializers.TweetSerializer(
             user=request.user, instance=tweet)
+        return Response(tweetSerializer.data)
+
+
+class TweetSearch(APIView):
+
+    """
+        Search for tweets based on argument
+    """
+
+    def post(self, request, format='json'):
+        if 'searchArg' not in request.data:
+            return Response("Search Argument Unspecified", status=status.HTTP_400_BAD_REQUEST)
+
+        import shlex
+        import argparse
+
+        parser = argparse.ArgumentParser(description="Search Argument")
+        parser.add_argument('-s', '--string', nargs='*',
+                            type=str, help='Search in string')
+        parser.add_argument('-df', '--dateFrom', nargs='?', help="df <=",
+                            type=datetime.date.fromisoformat)
+        parser.add_argument('-dt', '--dateTo', nargs='?', help="<= dt",
+                            type=datetime.date.fromisoformat)
+        parser.add_argument(
+            '-i', '--image', action='store_true', help="Contains Image")
+        parser.add_argument(
+            '-v', '--video', action='store_true', help="Contains Video")
+
+        searchArg = request.data['searchArg']
+        args = parser.parse_args(shlex.split(searchArg))
+
+        queryset = models.Tweet.objects
+        if args.image == True:
+            queryset = queryset.filter(~Q(imageUrl=None))
+        else:
+            queryset = queryset.filter(Q(imageUrl=None))
+
+        if args.video:
+            queryset = queryset.filter(~Q(videoUrl=None))
+        else:
+            queryset = queryset.filter(Q(videoUrl=None))
+
+        if args.dateTo:
+            queryset = queryset.filter(createDate__date__lte=args.dateTo)
+
+        if args.dateFrom:
+            queryset = queryset.filter(createDate__date__gte=args.dateFrom)
+
+        if args.string is not None:
+            for s in args.string:
+                queryset = queryset.filter(text__contains=s)
+
+        tweetSerializer = serializers.TweetSerializer(
+            user=request.user, instance=queryset, many=True)
         return Response(tweetSerializer.data)
