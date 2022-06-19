@@ -9,5 +9,6 @@ urlpatterns = [
     path('like/detail/', views.LikeDetail.as_view(), name='like-detail'),
     path('feed/', views.GetFeed.as_view(), name='feed'),
     path('detail/', views.TweetDetail.as_view(), name='tweet-detail'),
+    path('search/', views.TweetSearch.as_view(), name='tweet-search'),
     path('', views.SendTweet.as_view(), name='tweet'),
 ]
