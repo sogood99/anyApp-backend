@@ -9,6 +9,9 @@ migrate:
 run:
 	./manage.py runserver
 
+run-dev:
+	./manage.py runserver 0.0.0.0:8080
+
 clean:
 	rm -rf __pycache__
 	rm -rf migrations
