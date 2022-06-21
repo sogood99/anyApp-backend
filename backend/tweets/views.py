@@ -52,9 +52,18 @@ class SendTweet(APIView):
         else:
             videoUrl = None
 
+        if 'audio' in request.FILES:
+            audio = request.FILES['audio']
+            ext = audio.name.split('.')[-1]
+            audioUrl = default_storage.save(
+                'audio/tweet/' + str(tweet.id) + '.' + ext, ContentFile(audio.read()))
+        else:
+            audioUrl = None
+
         tweet.text = text
         tweet.imageUrl = imageUrl
         tweet.videoUrl = videoUrl
+        tweet.audioUrl = audioUrl
         if repliesId is not None:
             tweet.repliesTweet = models.Tweet.objects.get(pk=repliesId)
         else:
