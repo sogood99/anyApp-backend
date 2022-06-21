@@ -94,13 +94,23 @@ class DeleteTweet(APIView):
 
 class GetFeed(APIView):
     """
-       Get Feed for user 
+       Get Feed for user
     """
 
     def post(self, request, format='json'):
+        def filterByBlocked(querySet):
+            # given queryset, filter by excluding all blocked users
+            if not request.user.is_authenticated:
+                return querySet
+            else:
+                blockedUser = accountModels.Block.objects.filter(
+                    user=request.user).values_list('blockedUser', flat=True)
+                return querySet.filter(~Q(user__in=blockedUser))
+
         def recentFeed():
             # defaults to giving most recent
             tweets = models.Tweet.objects.order_by('-createDate')
+            tweets = filterByBlocked(tweets)
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
 
@@ -109,6 +119,7 @@ class GetFeed(APIView):
         def popularFeed():
             # orders by popular
             tweets = models.Tweet.objects.all()
+            tweets = filterByBlocked(tweets)
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
             ordered = sorted(tweetSerializer.data,
@@ -122,6 +133,7 @@ class GetFeed(APIView):
 
             tweets = models.Tweet.objects.filter(
                 repliesTweet=targetTweet).order_by('-createDate').all()
+            tweets = filterByBlocked(tweets)
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
             return Response(tweetSerializer.data)
@@ -130,6 +142,7 @@ class GetFeed(APIView):
             # feed of profile of user authed
             tweets = models.Tweet.objects.filter(
                 user=user).order_by('-createDate')
+            tweets = filterByBlocked(tweets)
             tweetSerializer = serializers.TweetSerializer(user=request.user,
                                                           instance=tweets, many=True)
             return Response(tweetSerializer.data)
@@ -141,6 +154,7 @@ class GetFeed(APIView):
 
             tweets = models.Tweet.objects.filter(
                 user__in=followingUsers).order_by('-createDate')
+            tweets = filterByBlocked(tweets)
             tweetSerializer = serializers.TweetSerializer(
                 user=user, instance=tweets, many=True)
             return Response(tweetSerializer.data)
