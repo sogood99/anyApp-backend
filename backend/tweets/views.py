@@ -224,6 +224,8 @@ class TweetSearch(APIView):
                             type=datetime.date.fromisoformat)
         parser.add_argument('-dt', '--dateTo', nargs='?', help="<= dt",
                             type=datetime.date.fromisoformat)
+        parser.add_argument('-to', '--textOnly',
+                            action='store_true', help="Contains only text")
         parser.add_argument(
             '-i', '--image', action='store_true', help="Contains Image")
         parser.add_argument(
@@ -233,6 +235,9 @@ class TweetSearch(APIView):
         args = parser.parse_args(shlex.split(searchArg))
 
         queryset = models.Tweet.objects
+        if args.textOnly == True:
+            queryset = queryset.filter((Q(imageUrl=None) & Q(videoUrl=None)))
+
         if args.image == True:
             queryset = queryset.filter(~Q(imageUrl=None))
 
