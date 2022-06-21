@@ -236,3 +236,21 @@ class BlockView(APIView):
         else:
             block.delete()
         return Response({"isBlocked": False})
+
+
+class BlockDetail(APIView):
+    """
+        Get all user blocked
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        blockedUsers = models.Block.objects.filter(
+            user=request.user).values_list('blockedUser', flat=True)
+        profiles = models.Profile.objects.filter(user__in=blockedUsers)
+        profileSerializer = serializers.ProfileSerializer(
+            instance=profiles, many=True)
+
+        print(profileSerializer.data)
+
+        return Response(profileSerializer.data)
