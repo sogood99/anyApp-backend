@@ -249,12 +249,24 @@ class TweetSearch(APIView):
         if args.dateFrom:
             queryset = queryset.filter(createDate__date__gte=args.dateFrom)
 
+        # for checking profile related fuzzy search in backend
         newQ = accountModels.Profile.objects.filter(
             user__in=queryset.values_list('user', flat=True))
 
         if args.string is not None:
-            q = Q()
+            # filter by username
+            usernameQ = Q()
+            argsStringNoUsername = args.string.copy()
             for s in args.string:
+                if (s[0] == '@'):
+                    usernameQ = usernameQ | Q(user__username=s[1:])
+                    argsStringNoUsername.remove(s)
+
+            queryset = queryset.filter(usernameQ)
+
+            # filter by search terms
+            q = Q()
+            for s in argsStringNoUsername:
                 q = q | Q(text__contains=s)
                 q = q | Q(user__username__contains=s)
                 tempQ = newQ.filter(profileName__contains=s)
