@@ -76,3 +76,5 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
+        fields = ('user', 'type', 'createDate', 'tweetId',
+                  'likeUserId', 'followUserId', 'replyTweetId')

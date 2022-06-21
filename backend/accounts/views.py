@@ -174,6 +174,13 @@ class FollowView(APIView):
             followSerializer = serializers.FollowSerializer(
                 data={"user": user.id, "followedUser": followedUser.id})
             if followSerializer.is_valid() and followSerializer.save():
+
+                # create notification
+                notificationSerializer = serializers.NotificationSerializer(
+                    data={'user': followedUser.id, 'type': "follow", 'followUserId': request.user.id})
+                if notificationSerializer.is_valid():
+                    notificationSerializer.save()
+
                 return Response({"isFollowed": True})
             # else does nothing and falls to isFollow=False
         else:
@@ -262,11 +269,13 @@ class NotificationView(APIView):
 
     def get(self, request):
         notifications = models.Notification.objects.filter(
-            user=request.user).order_by('-createDate')
+            user=request.user.id).order_by('-createDate')
 
         notificationSerializer = serializers.NotificationSerializer(
             instance=notifications, many=True)
 
         response = notificationSerializer.data.copy()
+
+        notifications.delete()
 
         return Response(response, status=status.HTTP_200_OK)
