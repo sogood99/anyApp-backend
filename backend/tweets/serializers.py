@@ -23,6 +23,7 @@ class TweetSerializer(serializers.ModelSerializer):
     text = serializers.CharField()
     imageUrl = serializers.CharField()
     videoUrl = serializers.CharField()
+    audioUrl = serializers.CharField()
     repliesId = serializers.SerializerMethodField(
         'getRepliesId', read_only=True)
     createDate = serializers.DateTimeField()
@@ -33,7 +34,7 @@ class TweetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tweet
         fields = ('tweetId', 'userId', 'username', 'profileName', 'userIconUrl',
-                  'text', 'imageUrl', 'videoUrl', 'repliesId', 'createDate', 'likes', 'isLiked')
+                  'text', 'imageUrl', 'videoUrl', 'audioUrl', 'repliesId', 'createDate', 'likes', 'isLiked')
 
     def getUserIconUrl(self, obj):
         userProfile = Profile.objects.get(pk=obj.user)
