@@ -10,6 +10,7 @@ class Tweet(models.Model):
         @param imageUrl Url for image (nullable)
         @param videoUrl Url for video (nullable)
         @param audioUrl Url for audio (nullable)
+        @param location Value of the location string (nullable)
         @param repliesTweet If this tweet is a reply of another tweet, foriegn key ref that tweet
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -17,6 +18,7 @@ class Tweet(models.Model):
     imageUrl = models.CharField(max_length=100, null=True, blank=True)
     videoUrl = models.CharField(max_length=100, null=True, blank=True)
     audioUrl = models.CharField(max_length=100, null=True, blank=True)
+    location = models.CharField(max_length=100, null=True, blank=True)
     repliesTweet = models.ForeignKey(
         "Tweet", on_delete=models.CASCADE, null=True, blank=True)
     createDate = models.DateTimeField(auto_now_add=True)
