@@ -10,5 +10,6 @@ urlpatterns = [
     path('feed/', views.GetFeed.as_view(), name='feed'),
     path('detail/', views.TweetDetail.as_view(), name='tweet-detail'),
     path('search/', views.TweetSearch.as_view(), name='tweet-search'),
+    path('delete/', views.DeleteTweet.as_view(), name='tweet-delete'),
     path('', views.SendTweet.as_view(), name='tweet'),
 ]

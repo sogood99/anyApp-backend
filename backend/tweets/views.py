@@ -75,6 +75,23 @@ class SendTweet(APIView):
         return Response(tweetSerializer.data, status=status.HTTP_200_OK)
 
 
+class DeleteTweet(APIView):
+    """
+        Let User Delete Tweet
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format='json'):
+        if 'tweetId' not in request.data:
+            return Response("Bad request", status=status.HTTP_400_BAD_REQUEST)
+        tweet: models.Tweet = models.Tweet.objects.get(
+            pk=request.data['tweetId'])
+        if tweet.user == request.user:
+            tweet.delete()
+            return Response("Delete Success", status=status.HTTP_200_OK)
+        return Response("Wrong user", status=status.HTTP_400_BAD_REQUEST)
+
+
 class GetFeed(APIView):
     """
        Get Feed for user 
