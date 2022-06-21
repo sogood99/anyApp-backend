@@ -83,9 +83,13 @@ class Notification(models.Model):
     createDate = models.DateTimeField(auto_now_add=True)
     tweetId = models.ForeignKey(
         Tweet, on_delete=models.CASCADE, blank=True, null=True, related_name='notification_tweet_id')
+    tweetBrief = models.CharField(blank=True, null=True, max_length=150)
     likeUserId = models.ForeignKey(
         User, on_delete=models.CASCADE, blank=True, null=True, related_name='liked_user_id')
+    likeUserInfo = models.CharField(blank=True, null=True, max_length=150)
     followUserId = models.ForeignKey(
         User, on_delete=models.CASCADE, blank=True, null=True, related_name='follow_user_id')
+    followUserInfo = models.CharField(blank=True, null=True, max_length=150)
     replyTweetId = models.ForeignKey(
         Tweet, on_delete=models.CASCADE, blank=True, null=True, related_name='reply_tweet_id')
+    replyTweetBrief = models.CharField(blank=True, null=True, max_length=150)

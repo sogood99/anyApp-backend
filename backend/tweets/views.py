@@ -75,7 +75,7 @@ class SendTweet(APIView):
             repliesTweet = models.Tweet.objects.get(pk=repliesId)
             repliedUser = repliesTweet.user
             notificationSerializer = accountSerializers.NotificationSerializer(
-                data={'user': repliedUser.id, 'type': "reply", 'tweetId': repliesTweet.id, 'replyTweetId': tweet.id})
+                data={'user': repliedUser.id, 'type': "reply", 'tweetId': repliesTweet.id, 'replyTweetId': tweet.id, 'replyTweetBrief': tweet.text})
             if notificationSerializer.is_valid():
                 notificationSerializer.save()
 
@@ -214,7 +214,7 @@ class LikeView(APIView):
 
                     # create notification for repliesId
                     notificationSerializer = accountSerializers.NotificationSerializer(
-                        data={'user': like.tweet.user.id, 'type': "like", 'tweetId': like.tweet.id, 'likeUserId': like.user.id})
+                        data={'user': like.tweet.user.id, 'type': "like", 'tweetId': like.tweet.id, 'tweetBrief': like.tweet.text, 'likeUserId': like.user.id, 'likeUserInfo': "@"+like.user.username})
                     if notificationSerializer.is_valid():
                         notificationSerializer.save()
 

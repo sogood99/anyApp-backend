@@ -177,7 +177,7 @@ class FollowView(APIView):
 
                 # create notification
                 notificationSerializer = serializers.NotificationSerializer(
-                    data={'user': followedUser.id, 'type': "follow", 'followUserId': request.user.id})
+                    data={'user': followedUser.id, 'type': "follow", 'followUserId': request.user.id, 'followUserInfo': "@"+request.user.username})
                 if notificationSerializer.is_valid():
                     notificationSerializer.save()
 
