@@ -251,6 +251,22 @@ class BlockDetail(APIView):
         profileSerializer = serializers.ProfileSerializer(
             instance=profiles, many=True)
 
-        print(profileSerializer.data)
-
         return Response(profileSerializer.data)
+
+
+class NotificationView(APIView):
+    """
+        Get Notifications for User
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        notifications = models.Notification.objects.filter(
+            user=request.user).order_by('-createDate')
+
+        notificationSerializer = serializers.NotificationSerializer(
+            instance=notifications, many=True)
+
+        response = notificationSerializer.data.copy()
+
+        return Response(response, status=status.HTTP_200_OK)
