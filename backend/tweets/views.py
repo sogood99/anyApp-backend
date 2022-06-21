@@ -235,13 +235,9 @@ class TweetSearch(APIView):
         queryset = models.Tweet.objects
         if args.image == True:
             queryset = queryset.filter(~Q(imageUrl=None))
-        else:
-            queryset = queryset.filter(Q(imageUrl=None))
 
         if args.video:
             queryset = queryset.filter(~Q(videoUrl=None))
-        else:
-            queryset = queryset.filter(Q(videoUrl=None))
 
         if args.dateTo:
             queryset = queryset.filter(createDate__date__lte=args.dateTo)
