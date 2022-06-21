@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 
-from .models import Follow, Profile
+from .models import Block, Follow, Profile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -63,3 +63,10 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = ('user', 'followedUser')
+
+
+class BlockSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Block
+        fields = ('user', 'blockedUser')

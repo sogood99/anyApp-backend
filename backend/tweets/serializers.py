@@ -30,11 +30,12 @@ class TweetSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField('getLikeCount', read_only=True)
     isLiked = serializers.SerializerMethodField(
         'getIfUserLiked', read_only=True)
+    isSelf = serializers.SerializerMethodField('getIfSelf', read_only=True)
 
     class Meta:
         model = Tweet
         fields = ('tweetId', 'userId', 'username', 'profileName', 'userIconUrl',
-                  'text', 'imageUrl', 'videoUrl', 'audioUrl', 'repliesId', 'createDate', 'likes', 'isLiked')
+                  'text', 'imageUrl', 'videoUrl', 'audioUrl', 'repliesId', 'createDate', 'likes', 'isLiked', 'isSelf')
 
     def getUserIconUrl(self, obj):
         userProfile = Profile.objects.get(pk=obj.user)
@@ -64,6 +65,11 @@ class TweetSerializer(serializers.ModelSerializer):
         if self.user is None or self.user.is_authenticated:
             likeCount = Like.objects.filter(user=self.user, tweet=obj).count()
             return (likeCount > 0)
+        return False
+
+    def getIfSelf(self, obj):
+        if self.user is None or self.user.is_authenticated:
+            return self.user == obj.user
         return False
 
 

@@ -89,17 +89,24 @@ class GetProfileJson(APIView):
                     # check if followed requestUser
                     if request.user.is_authenticated:
                         user = request.user
-                        followedUser = User.objects.get(pk=requestUserId)
+                        targetUser = User.objects.get(pk=requestUserId)
 
                         follow = models.Follow.objects.filter(
-                            user=user, followedUser=followedUser).first()
-
+                            user=user, followedUser=targetUser).first()
                         if follow is not None:
                             jsonResp['isFollowed'] = True
                         else:
                             jsonResp['isFollowed'] = False
+
+                        block = models.Block.objects.filter(
+                            user=user, blockedUser=targetUser).first()
+                        if block is not None:
+                            jsonResp['isBlocked'] = True
+                        else:
+                            jsonResp['isBlocked'] = False
                     else:
                         jsonResp['isFollowed'] = False
+                        jsonResp['isBlocked'] = False
 
                 return Response(jsonResp)
 
@@ -150,11 +157,11 @@ class FollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format='json'):
-        if 'followedUserId' not in request.data:
+        if 'followUserId' not in request.data:
             return Response("No User Specified", status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
-        followedUserId = request.data['followedUserId']
+        followedUserId = request.data['followUserId']
         followedUser = User.objects.get(pk=followedUserId)
         follow = models.Follow.objects.filter(
             user=user, followedUser=followedUser).first()
@@ -197,3 +204,35 @@ class FollowDetail(APIView):
             instance=profiles, many=True)
 
         return Response(profileSerializer.data)
+
+
+class BlockView(APIView):
+    """
+        Let User Block Another User
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format='json'):
+        if 'blockUserId' not in request.data:
+            return Response("No User Specified", status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        blockedUserId = request.data['blockUserId']
+        blockedUser = User.objects.get(pk=blockedUserId)
+        block = models.Block.objects.filter(
+            user=user, blockedUser=blockedUser).first()
+
+        if user == blockedUser:
+            return Response("Cannot Block Self", status=status.HTTP_400_BAD_REQUEST)
+
+        if block is None:
+            # has not been blocked before
+            blockSerializer = serializers.BlockSerializer(
+                data={"user": user.id, "blockedUser": blockedUser.id})
+            if blockSerializer.is_valid() and blockSerializer.save():
+                return Response({"isBlocked": True})
+            # else does nothing and falls to isBlocked=False
+        else:
+            block.delete()
+        return Response({"isBlocked": False})

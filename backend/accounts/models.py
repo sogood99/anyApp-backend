@@ -23,10 +23,10 @@ class Follow(models.Model):
     """
         Follow model
         @param user User that followed
-        @param user User that is being followed
+        @param followedUser User that is being followed
     """
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, blank=False, null=False, related_name='user')
+        User, on_delete=models.CASCADE, blank=False, null=False, related_name='f_user')
     followedUser = models.ForeignKey(
         User, on_delete=models.CASCADE, blank=False, null=False, related_name='follwed_user')
 
@@ -37,5 +37,27 @@ class Follow(models.Model):
             ),
             models.CheckConstraint(
                 check=~Q(user=F('followedUser')), name='cannot-follow-self'
+            )
+        ]
+
+
+class Block(models.Model):
+    """
+        Block model
+        @param user User that followed
+        @param blockedUser User that is being followed
+    """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=False, null=False, related_name='b_user')
+    blockedUser = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=False, null=False, related_name='blocked_user')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'blockedUser'], name='unique-user-block'
+            ),
+            models.CheckConstraint(
+                check=~Q(user=F('blockedUser')), name='cannot-block-self'
             )
         ]
