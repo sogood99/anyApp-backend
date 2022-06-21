@@ -1,4 +1,4 @@
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -34,6 +34,28 @@ class UserCreate(APIView):
                 user.delete()
                 return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserUpdate(APIView):
+    """
+        Update a user
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format='json'):
+
+        if 'password' not in request.data or 'newPassword' not in request.data:
+            return Response('Please include Username Password Not Found', status=status.HTTP_400_BAD_REQUEST)
+
+        user: User = request.user
+
+        if not user.check_password(request.data['password']):
+            return Response('Incorrect Password', status=status.HTTP_401_UNAUTHORIZED)
+
+        user.set_password(request.data['newPassword'])
+        user.save()
+
+        return Response('Set password success', status=status.HTTP_200_OK)
 
 
 class GetProfileJson(APIView):
