@@ -11,4 +11,5 @@ urlpatterns = [
     path('profile/update/', views.UpdateProfile.as_view(), name='update-profile'),
     path('follow/', views.FollowView.as_view(), name='follow'),
     path('follow/detail/', views.FollowDetail.as_view(), name='follow-detail'),
+    path('block/', views.BlockView.as_view(), name='block'),
 ]
