@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 
-from .models import Block, Follow, Profile
+from .models import Block, Follow, Notification, Profile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -70,3 +70,11 @@ class BlockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Block
         fields = ('user', 'blockedUser')
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Notification
+        fields = ('user', 'type', 'createDate', 'tweetId', 'tweetBrief',
+                  'likeUserId', 'likeUserInfo', 'followUserId', 'followUserInfo', 'replyTweetId', 'replyTweetBrief')

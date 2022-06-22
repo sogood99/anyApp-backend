@@ -174,6 +174,13 @@ class FollowView(APIView):
             followSerializer = serializers.FollowSerializer(
                 data={"user": user.id, "followedUser": followedUser.id})
             if followSerializer.is_valid() and followSerializer.save():
+
+                # create notification
+                notificationSerializer = serializers.NotificationSerializer(
+                    data={'user': followedUser.id, 'type': "follow", 'followUserId': request.user.id, 'followUserInfo': "@"+request.user.username})
+                if notificationSerializer.is_valid():
+                    notificationSerializer.save()
+
                 return Response({"isFollowed": True})
             # else does nothing and falls to isFollow=False
         else:
@@ -236,3 +243,39 @@ class BlockView(APIView):
         else:
             block.delete()
         return Response({"isBlocked": False})
+
+
+class BlockDetail(APIView):
+    """
+        Get all user blocked
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        blockedUsers = models.Block.objects.filter(
+            user=request.user).values_list('blockedUser', flat=True)
+        profiles = models.Profile.objects.filter(user__in=blockedUsers)
+        profileSerializer = serializers.ProfileSerializer(
+            instance=profiles, many=True)
+
+        return Response(profileSerializer.data)
+
+
+class NotificationView(APIView):
+    """
+        Get Notifications for User
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        notifications = models.Notification.objects.filter(
+            user=request.user.id).order_by('-createDate')
+
+        notificationSerializer = serializers.NotificationSerializer(
+            instance=notifications, many=True)
+
+        response = notificationSerializer.data.copy()
+
+        notifications.delete()
+
+        return Response(response, status=status.HTTP_200_OK)

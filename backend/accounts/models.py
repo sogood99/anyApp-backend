@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Q, F
 
+from tweets.models import Tweet
+
 
 class Profile(models.Model):
     """
@@ -44,8 +46,8 @@ class Follow(models.Model):
 class Block(models.Model):
     """
         Block model
-        @param user User that followed
-        @param blockedUser User that is being followed
+        @param user User that blocked
+        @param blockedUser User that is being blocked
     """
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, blank=False, null=False, related_name='b_user')
@@ -61,3 +63,33 @@ class Block(models.Model):
                 check=~Q(user=F('blockedUser')), name='cannot-block-self'
             )
         ]
+
+
+class Notification(models.Model):
+    """
+        Block model
+        @param user : For which user
+        @param type : Type of notifications (Like, Follow, Reply)
+        @param createDate : Date which the tweet got dispatched
+        @param tweetId : Tweet which got liked/replied
+        @param likeUserId : User which liked the tweet
+        @param followUserId : User which followed user
+        @param replyTweetId : User which followed user
+        @param replyUserId : User which followed user
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             blank=False, null=False, related_name='notification_user')
+    type = models.CharField(blank=True, null=True, max_length=32)
+    createDate = models.DateTimeField(auto_now_add=True)
+    tweetId = models.ForeignKey(
+        Tweet, on_delete=models.CASCADE, blank=True, null=True, related_name='notification_tweet_id')
+    tweetBrief = models.CharField(blank=True, null=True, max_length=150)
+    likeUserId = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=True, null=True, related_name='liked_user_id')
+    likeUserInfo = models.CharField(blank=True, null=True, max_length=150)
+    followUserId = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=True, null=True, related_name='follow_user_id')
+    followUserInfo = models.CharField(blank=True, null=True, max_length=150)
+    replyTweetId = models.ForeignKey(
+        Tweet, on_delete=models.CASCADE, blank=True, null=True, related_name='reply_tweet_id')
+    replyTweetBrief = models.CharField(blank=True, null=True, max_length=150)

@@ -12,4 +12,6 @@ urlpatterns = [
     path('follow/', views.FollowView.as_view(), name='follow'),
     path('follow/detail/', views.FollowDetail.as_view(), name='follow-detail'),
     path('block/', views.BlockView.as_view(), name='block'),
+    path('block/detail/', views.BlockDetail.as_view(), name='block-detail'),
+    path('notification/', views.NotificationView.as_view(), name='notifications'),
 ]

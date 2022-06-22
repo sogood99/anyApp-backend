@@ -76,6 +76,15 @@ class SendTweet(APIView):
             tweet.repliesTweet = None
         tweet.save()
 
+        if repliesId is not None:
+            # create notification for repliesId
+            repliesTweet = models.Tweet.objects.get(pk=repliesId)
+            repliedUser = repliesTweet.user
+            notificationSerializer = accountSerializers.NotificationSerializer(
+                data={'user': repliedUser.id, 'type': "reply", 'tweetId': repliesTweet.id, 'replyTweetId': tweet.id, 'replyTweetBrief': tweet.text})
+            if notificationSerializer.is_valid():
+                notificationSerializer.save()
+
         tweetSerializer = serializers.TweetSerializer(
             user=request.user, instance=tweet)
         return Response(tweetSerializer.data, status=status.HTTP_200_OK)
@@ -205,8 +214,17 @@ class LikeView(APIView):
             # has not been liked before
             likeSerializer = serializers.LikeSerializer(
                 data={"user": userId, "tweet": tweetId})
-            if likeSerializer.is_valid() and likeSerializer.save():
-                return Response({"isLike": True})
+            if likeSerializer.is_valid():
+                like = likeSerializer.save()
+                if like:
+
+                    # create notification for repliesId
+                    notificationSerializer = accountSerializers.NotificationSerializer(
+                        data={'user': like.tweet.user.id, 'type': "like", 'tweetId': like.tweet.id, 'tweetBrief': like.tweet.text, 'likeUserId': like.user.id, 'likeUserInfo': "@"+like.user.username})
+                    if notificationSerializer.is_valid():
+                        notificationSerializer.save()
+
+                    return Response({"isLike": True})
             # else does nothing and falls to isLike=False
         else:
             like.delete()
