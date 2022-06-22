@@ -36,6 +36,11 @@ class SendTweet(APIView):
         else:
             repliesId = None
 
+        if 'location' in request.data:
+            location = request.data['location']
+        else:
+            location = None
+
         if 'image' in request.FILES:
             image = request.FILES['image']
             ext = image.name.split('.')[-1]
@@ -61,6 +66,7 @@ class SendTweet(APIView):
             audioUrl = None
 
         tweet.text = text
+        tweet.location = location
         tweet.imageUrl = imageUrl
         tweet.videoUrl = videoUrl
         tweet.audioUrl = audioUrl
